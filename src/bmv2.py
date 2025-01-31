@@ -10,8 +10,9 @@ from sagemaker import KMeans
     '''
 
 class bmv2:
-    def __init__(self):
+    def __init__(self, bucket):
         self.role = self.get_role()
+        self.bucket = bucket
         self.model = None
         self.estimator = None
     
