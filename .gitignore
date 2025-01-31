@@ -1,0 +1,10 @@
+# environment
+.env
+.venv
+venv/
+
+# data
+data/
+
+# model
+model/
