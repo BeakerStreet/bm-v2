@@ -5,9 +5,6 @@ class Dataset:
         self.bucket = bucket
         self.raw = pass
         self.cleaned = pass
-        self.embeddings = pass
+        self.labelled = pass
     
-    '''
-    processing text datasets reflecting game_states
-    and player actions. Intent is an unsupervised 
-    learning algorithm 
+    
