@@ -8,3 +8,7 @@ data/
 
 # model
 model/
+
+# jupyter notebook
+.ipynb_checkpoints/
+*.ipynb
