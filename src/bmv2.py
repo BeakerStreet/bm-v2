@@ -1,13 +1,6 @@
 import tensorflow as tf
-from sagemaker import KMeans
-
-
-    '''
-    Goal: predict the build orders and settle locations
-    of players by difficulty with a clustering algorithm 
-    organising actions and game states by t10 culture, 
-    science, faith, and gold.
-    '''
+import sagemaker
+from sagemaker.amazon.amazon_estimator import KMeans
 
 class bmv2:
     def __init__(self, bucket):
