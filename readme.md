@@ -1,57 +1,29 @@
 Civ6 AI Behavior Prediction Model
 
 **Overview**
-This repository contains a machine learning model designed to analyze human gameplay in Sid Meier’s Civilization VI using video footage. The video is processed into a series of screenshots, which are analyzed to determine early-game build choices. The goal of this analysis is to predict a set of AI-relevant values, specifically PseudoYields and AiFavoredItems, which influence AI behavior in the game.
 
-By understanding the relationship between human decision-making and AI behavior, this model provides insights that could be used for AI tuning, game balancing, and strategic analysis.
+Welcome to Buddy Model, version 2! Bm-v2 is an engine that attempts to use human gameplay in Sid Meier’s Civilization VI to improve AI behaviour in-game.
+
+**Ambition: Making a mod**
+
+Ultimately our goal is a mod manipulating an in-game variable called "PseudoYields". These (we think) define the internal value Civ VI AIs assign to various in-game choices. There are PseudoYields for many specific units, buildings, districts, improvements, and wonders -- maybe all of them. 
+
+In bm-v2, we focus only on influencing the PseudoYields of specific buildings, using the build orders of the players we are analysing to attempt to infer the value a human player playing at a high difficulty level would have.
 
 **How It Works**
 
-*Video Processing*
+Bm-v2 takes video footage of people playing Civilization VI and converts it into images and then text, capturing the build decisions of the player and converting them into sequences. Once completed, these are fed back into the LLM again to form a prediction for the PseudoYield value of each building and unit, and finally this is fed in one more time to generate a mod.
 
-Video footage of Civilization VI gameplay is converted into individual frames.
-Key moments (e.g., city founding, unit production, district placement) are extracted for analysis.
+*Success and failure*
 
-*Screenshot Analysis*
+In bm-v2 we have no idea whether our model or the mods it leads to actually improve the AI's performance, but in future iterations our intention is too additional capture game states in the image analysis phase, and use that to compare the performance of Prince AIs in our mod versus those in the base game.  
 
-Screenshots are processed using image recognition techniques to identify game elements.
-The model detects what the player chooses to build in the early game (units, buildings, districts, improvements).
-Contextual information (map layout, resources, opponent presence) is also extracted if available.
+**Towards a real model**
 
-*Label Prediction*
+Ultimately, our ambition with buddy model is to use the images, video, and text data that can be generated from people's play to create game code. Using the raw information of images, multimedia, and rich text, it should be possible to specifically predict: 
 
-The extracted data is mapped to a series of pre-labeled values categorized as PseudoYields and AiFavoredItems.
-The model is trained to predict these labels based on observed gameplay decisions.
+- individual structured outputs, such as the specific float values of each PseudoYield
+- mod code, transformed from a semantic descriptions of human gameplay
+- "good" and "bad" play, reinforced using the scoring systems built into the game itself
 
-**Key AI-Influencing Labels**
-
-*PseudoYields*
-
-PseudoYields in Civilization VI are internal AI scoring values that determine the desirability of various in-game choices. These scores are influenced by a range of factors, including strategic priorities, resource availability, and opponent behaviors. The model attempts to infer these values based on observed player actions.
-
-*Predictable PseudoYields from Early Gameplay*
-
-City Expansion Priority (e.g., Settler production, tile purchasing)
-Military Emphasis (e.g., Training early melee or ranged units, building Encampments)
-Scientific Focus (e.g., Prioritizing Campuses, building Libraries early)
-Economic Growth (e.g., Emphasizing Commercial Hubs, early gold-generating improvements)
-Religious Intent (e.g., Early Holy Sites, shrine construction, faith-based purchases)
-Production Efficiency (e.g., Prioritizing Industrial Zones, builders improving high-production tiles)
-Diplomatic Weight (e.g., Early Envoy spending, trade route choices, alliances)
-Naval Expansion (e.g., Coastal city focus, early galleys, harbors)
-The model learns to infer these values based on patterns in player choices. For instance, if a player consistently builds Campuses early, the AI’s PseudoYield_Science might be increased accordingly.
-
-*AiFavoredItems*
-
-AiFavoredItems are specific preferences inserted into the AI decision-making process. These influence how likely the AI is to favor certain builds, policies, wonders, or strategies.
-
-*Potential AiFavoredItems Insertions*
-
-Preferred Districts (e.g., AI may favor Commercial Hubs if early-game gold accumulation is detected)
-Wonders & Infrastructure (e.g., If early-game focus on production is observed, AI may prioritize Pyramids or Ruhr Valley)
-Unit Composition Bias (e.g., If the player favors cavalry units, the AI may increase its cavalry response)
-Technology & Civic Prioritization (e.g., AI might be nudged towards military techs if aggressive early play is detected)
-Government Choices (e.g., AI preference for Autocracy over Classical Republic if military-heavy early game is observed)
-These preferences help shape AI behavior dynamically based on the observed tendencies of the human player.
-
-This model is an ongoing research project aiming to bridge the gap between human strategic thinking and AI decision-making in Civilization VI. Contributions, suggestions, and insights are welcome! 🚀
+...and much more! This is a work in progress, we've got a long way to go.
