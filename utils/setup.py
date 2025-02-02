@@ -31,42 +31,48 @@ def gdrive_build():
 
     return service
 
-def gdrive_download_file(service, path, file):
-    
-    # Extract the file ID from the path
-    file_id = path.split('/')[-1]
-    
-    # Request the file from Google Drive
-    request = service.files().get_media(fileId=file_id)
-    
-    with open(file, 'wb') as f:
-        downloader = MediaIoBaseDownload(f, request)
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
-    
-    return file
-
-def gdrive_get_folder_list(service, path):
+def gdrive_dl_files(service, folder_id):
     files = []
-    folder_id = path.split('/')[-1]
-    
-    # List folders
     results = service.files().list(
-        q="mimeType='application/vnd.google-apps.folder'",
+        q=f"'{folder_id}' in parents and name='frames'",
         fields="nextPageToken, files(id, name)"
     ).execute()
-    folders = results.get('files', [])
+    frames_folder = results.get('files', [])
 
-    return folders
+    if frames_folder:
+        frames_folder_id = frames_folder[0]['id']
+        results = service.files().list(
+            q=f"'{frames_folder_id}' in parents",
+            fields="nextPageToken, files(id, name)"
+        ).execute()
+        files = results.get('files', [])
+
+    print(files)
+    input('')
+
+    return files
 
 def main():
     s3 = boto3.client('s3')
 
     root_folder = authenticate_gdrive()
     service = gdrive_build()
-    folders = gdrive_get_folder_list(service, f"{root_folder}/training_data")
+
+    folder_ids = [
+        '1yzOgg7H3KZgMwPY3MnYkW5q6P_ZG14d_', 
+        '1Ey5wkDfb3M7uc_4hupmQ76l13jlIBIJ9', 
+        '1aMtCPrOzGtY7ubdG-bQM_Cy3lzxwDFi4', 
+        '1OrqefN-AosC29VypHZXoCMYql7Pgl0Ss',
+        '1HanOq6fMx5ZADrYxQEkDeeEgCV-nQVa8', 
+        '1qv70hbPqkUEf4tUlhvlk4DzVMtP05EUk',
+        '1ZMcarHkELxGUDu-r1TQfx2iuMlLAR08a',
+        '1mQjgrWc4X3aNqTcNoNQVlg2FcyCW3MUC',
+        '1YE-7wZtAtwcvThVPBn2gu88pZdhAaIba',
+        '1KebxwrPwCVsYDcPxxsS4M0BE1nZPhgtB'
+    ]
     
+    for folder_id in folder_ids:
+        files = gdrive_dl_files(service, folder_id)
 
     # folder dict: {'name': name, 'id': id}, 
     # for name, id in dict: 
