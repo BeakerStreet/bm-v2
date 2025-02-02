@@ -12,3 +12,6 @@ model/
 # jupyter notebook
 .ipynb_checkpoints/
 *.ipynb
+
+# google drive
+buddy-model-e8809af9668e.json
