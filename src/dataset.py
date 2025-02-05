@@ -3,8 +3,8 @@ import sagemaker
 import pandas as pd
 
 class Dataset:
-    def __init__(self, bucket: str):
-        self.bucket = bucket
+    def __init__(self):
+        self.bucket = os.environ['BUCKET']
         self.role = self.get_role()
         
     

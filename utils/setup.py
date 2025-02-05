@@ -31,26 +31,36 @@ def gdrive_build():
 
     return service
 
-def gdrive_dl_files(service, folder_id):
-    files = []
-    results = service.files().list(
-        q=f"'{folder_id}' in parents and name='frames'",
-        fields="nextPageToken, files(id, name)"
-    ).execute()
-    frames_folder = results.get('files', [])
-
-    if frames_folder:
-        frames_folder_id = frames_folder[0]['id']
-        results = service.files().list(
-            q=f"'{frames_folder_id}' in parents",
-            fields="nextPageToken, files(id, name)"
-        ).execute()
-        files = results.get('files', [])
-
-    print(files)
-    input('')
+def iter_img_dirs():
+    root = 'data/images/' 
+    dirs = ['102AztecDeity', '103MapucheDiety', '104NubiaDeity', '105SwedenDeity', '106RamsesDeity', '107AmericaDeity', '108FranceDeity', '109ArabiaDeity', '110ScythiaDeity']
+    for dir in dirs:
+        files = os.listdir(f"{root}{dir}")
 
     return files
+
+def rn():
+    root = 'data/images/' 
+    dirs = ['110ScythiaDeity']
+    count = 1
+    for dir in dirs:
+        files = os.listdir(f"{root}{dir}")
+
+        for file in files:
+            
+            os.rename(f"{root}{dir}/{file}", f"{root}{dir}/{dir}_{count}.jpg")
+            count += 1
+
+def s3_ul():
+    s3 = boto3.client('s3')
+
+    root = 'data/images/' 
+    dirs = ['102AztecDeity', '103MapucheDiety', '104NubiaDeity', '105SwedenDeity', '106RamsesDeity', '107AmericaDeity', '108FranceDeity', '109ArabiaDeity', '110ScythiaDeity']
+    for dir in dirs:
+        files = os.listdir(f"{root}{dir}")
+
+        for file in files:
+            s3.upload_file(f"data/images/{dir}/{file}", 'bmv2', f"data/images/{file}")
 
 def main():
     s3 = boto3.client('s3')
@@ -70,15 +80,9 @@ def main():
         '1YE-7wZtAtwcvThVPBn2gu88pZdhAaIba',
         '1KebxwrPwCVsYDcPxxsS4M0BE1nZPhgtB'
     ]
-    
-    for folder_id in folder_ids:
-        files = gdrive_dl_files(service, folder_id)
 
-    # folder dict: {'name': name, 'id': id}, 
-    # for name, id in dict: 
-    #   for image_filename in id:
-    #       print(image_filename)
-    #       input() just take a look
+    # rn()
+    # s3_ul()
 
     '''
     Plan:
