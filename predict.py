@@ -7,7 +7,10 @@ def train():
     Train the model
     '''
     
-    pass
+    dataset = Dataset()
+    dataset.generate()
+
+    print(dataset.raw)
 
 def deploy():
     '''
