@@ -5,13 +5,14 @@ import os
 from openai import OpenAI
 from pydantic import BaseModel
 
-class Turn(BaseModel):
-    turn: int
-    cities: list[City]
 
 class City(BaseModel):
     name: str
     current_build: str
+
+class Turn(BaseModel):
+    turn: int
+    cities: list[City]
 
 class CivViBuildAnalysis(BaseModel):
         '''
