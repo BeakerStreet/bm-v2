@@ -88,8 +88,7 @@ def main():
     Plan:
 
     - create the labeling sequence in dataset:
-        > video -> images (done)
-        > images -> build orders
+        > create dataset.json and a labeling function for collecting build orders from screenshots (only)
         > build orders -> dataset.json
         > (opt) plot build orders 
     - create the mod prediction sequence in bmv2:
