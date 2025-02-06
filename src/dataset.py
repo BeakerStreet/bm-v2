@@ -5,10 +5,13 @@ import os
 from openai import OpenAI
 from pydantic import BaseModel
 import logging
+from dotenv import load_dotenv
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+load_dotenv()
 
 class City(BaseModel):
     name: str
