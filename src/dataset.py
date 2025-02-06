@@ -71,7 +71,7 @@ class Dataset:
         '''
 
         response = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='data/images/')
-        images_list = [{"name": obj["Key"], "url": f"https://{self.bucket}.s3.amazonaws.com/{obj['Key']}"} for obj in response.get("Contents", [])]
+        images_list = [{"name": obj["Key"], "url": f"https://{self.bucket}.s3.amazonaws.com/{obj['Key']}"} for obj in response.get("Contents", []) if obj["Key"] != 'data/images/']
 
         logging.info(f"Found {len(images_list)} images.")
 
@@ -88,31 +88,43 @@ class Dataset:
         '''
 
         raw_text = []
-        for image in self.images_list[:1]:
-            completion = self.client.beta.chat.completions.parse(
-                model="gpt-4o-2024-08-06",
-                messages=[
-                    {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
-                            {
-                                "type": "image_url",
-                                "image_url": {
-                                    "url": image['url'],
-                                }
-                            },
-                        ],
-                    },
-                ],
-                response_format=CivViBuildAnalysis,
-            )
-
-            event = completion.choices[0].message.parsed
-            raw_text.append(event)
-
+        
+        # Open the file once and write the opening bracket
         with open('data/raw_text.json', 'w') as f:
-            json.dump(raw_text, f, indent=4)
+            f.write('[\n')
+
+            for idx, image in enumerate(self.images_list[:2], start=1):
+                logging.info(f"Processing image {idx} of {len(self.images_list)}")
+                completion = self.client.beta.chat.completions.parse(
+                    model="gpt-4o-2024-08-06",
+                    messages=[
+                        {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": image['url'],
+                                    }
+                                },
+                            ],
+                        },
+                    ],
+                    response_format=CivViBuildAnalysis,
+                )
+
+                event = completion.choices[0].message.parsed
+
+                # Write each JSON object, adding a comma before each except the first
+                if idx > 0:
+                    f.write(',\n')
+                json.dump(event.dict(), f, indent=4)
+
+                raw_text.append(event)
+
+            # Write the closing bracket
+            f.write('\n]')
 
         return raw_text
