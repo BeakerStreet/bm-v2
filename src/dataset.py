@@ -41,9 +41,9 @@ class CivViBuildAnalysis(BaseModel):
 
         '''
 
-        self.game_id: str
-        self.build_order: list[str]
-        self.turns: list[Turn]
+        game_id: str
+        build_order: list[str]
+        turns: list[Turn]
 
 class Dataset:
     def __init__(self):
