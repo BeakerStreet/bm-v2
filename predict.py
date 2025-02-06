@@ -2,15 +2,16 @@ import sagemaker
 from sagemaker import KMeans
 import numpy as np
 
+from src.dataset import Dataset
+
 def train():
     '''
     Train the model
     '''
     
     dataset = Dataset()
-    dataset.generate()
+    print(dataset.images_list)
 
-    print(dataset.raw)
 
 def deploy():
     '''
