@@ -2,6 +2,7 @@ import boto3
 import sagemaker
 import pandas as pd
 import os
+import json
 from openai import OpenAI
 from pydantic import BaseModel
 import logging
@@ -87,7 +88,7 @@ class Dataset:
         '''
 
         raw_text = []
-        for image in self.images_list:
+        for image in self.images_list[:1]:
             completion = self.client.beta.chat.completions.parse(
                 model="gpt-4o-2024-08-06",
                 messages=[
@@ -110,5 +111,8 @@ class Dataset:
 
             event = completion.choices[0].message.parsed
             raw_text.append(event)
+
+        with open('data/raw_text.json', 'w') as f:
+            json.dump(raw_text, f, indent=4)
 
         return raw_text

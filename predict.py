@@ -11,8 +11,8 @@ def train():
     '''
     
     dataset = Dataset()
-    print("Dataset loaded")
-
+    raw_text = dataset.generate()
+    print("Raw text added to dataset and saved to directory.")
 
 def deploy():
     '''
