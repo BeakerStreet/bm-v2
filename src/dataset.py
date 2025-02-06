@@ -4,6 +4,10 @@ import pandas as pd
 import os
 from openai import OpenAI
 from pydantic import BaseModel
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 class City(BaseModel):
@@ -50,57 +54,59 @@ class Dataset:
         self.s3 = boto3.client('s3')
         self.client = OpenAI()
         self.bucket = os.environ['BUCKET']
-        self.temp_image = None
         self.images_list = self.list_images()
+        
         self.raw = []
         self.cleaned = []
             
-        def list_images(self):
-            '''
-            Creates a list of 
-            all the images currently 
-            available for the 
-            dataset 
-            '''
+    def list_images(self):
+        '''
+        Creates a list of 
+        all the images currently 
+        available for the 
+        dataset 
+        '''
 
-            response = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='data/images/')
-            images_list = [{"name": obj["Key"], "url": f"https://{self.bucket}.s3.amazonaws.com/{obj['Key']}"} for obj in response.get("Contents", [])]
+        response = self.s3.list_objects_v2(Bucket=self.bucket, Prefix='data/images/')
+        images_list = [{"name": obj["Key"], "url": f"https://{self.bucket}.s3.amazonaws.com/{obj['Key']}"} for obj in response.get("Contents", [])]
 
-            return images_list
+        logging.info(f"Found {len(images_list)} images.")
 
-        def generate(self):
-            '''
-            Generates a text dataset 
-            by downloading gameplay images
-            one at a time and generating
-            a list of the build decisions
-            made by the player by city and 
-            turn for CivViBuildAnalysis
-            '''
+        return images_list
 
-            raw_text = []
-            for image in self.images_list:
-                completion = self.client.beta.chat.completions.parse(
-                    model="gpt-4o-2024-08-06",
-                    messages=[
-                        {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": image['url'],
-                                    }
-                                },
-                            ],
-                        },
-                    ],
-                    response_format=CivViBuildAnalysis,
-                )
+    def generate(self):
+        '''
+        Generates a text dataset 
+        by downloading gameplay images
+        one at a time and generating
+        a list of the build decisions
+        made by the player by city and 
+        turn for CivViBuildAnalysis
+        '''
 
-                event = completion.choices[0].message.parsed
-                raw_text.append(event)
+        raw_text = []
+        for image in self.images_list:
+            completion = self.client.beta.chat.completions.parse(
+                model="gpt-4o-2024-08-06",
+                messages=[
+                    {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": image['url'],
+                                }
+                            },
+                        ],
+                    },
+                ],
+                response_format=CivViBuildAnalysis,
+            )
 
-            return raw_text
+            event = completion.choices[0].message.parsed
+            raw_text.append(event)
+
+        return raw_text

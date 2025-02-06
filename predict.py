@@ -1,6 +1,7 @@
 import sagemaker
 from sagemaker import KMeans
 import numpy as np
+import argparse
 
 from src.dataset import Dataset
 
@@ -10,7 +11,7 @@ def train():
     '''
     
     dataset = Dataset()
-    print(dataset.images_list)
+    print("Dataset loaded")
 
 
 def deploy():
@@ -26,3 +27,22 @@ def predict(data):
     '''
 
     pass 
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description="Train, deploy, or predict using the model.")
+    parser.add_argument("action", choices=["train", "deploy", "predict"], help="Action to perform")
+    parser.add_argument("--data", type=str, help="Data for prediction")
+
+    args = parser.parse_args()
+
+    if args.action == "train":
+        train()
+    elif args.action == "deploy":
+        deploy()
+    elif args.action == "predict":
+        if args.data:
+            predict(args.data)
+        else:
+            print("Please provide data for prediction using --data")
