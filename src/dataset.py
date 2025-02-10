@@ -48,7 +48,6 @@ class CivViBuildAnalysis(BaseModel):
 
         '''
 
-        game_id: str
         build_order: list[str]
         turns: list[Turn]
 
@@ -93,8 +92,9 @@ class Dataset:
         with open('data/raw_text.json', 'w') as f:
             f.write('[\n')
 
-            for idx, image in enumerate(self.images_list[:2], start=1):
+            for idx, image in enumerate(self.images_list[:10], start=1):
                 logging.info(f"Processing image {idx} of {len(self.images_list)}")
+                game_id = image['name'].split('/')[-1]
                 completion = self.client.beta.chat.completions.parse(
                     model="gpt-4o-2024-08-06",
                     messages=[
@@ -118,7 +118,7 @@ class Dataset:
                 event = completion.choices[0].message.parsed
 
                 # Write each JSON object, adding a comma before each except the first
-                if idx > 0:
+                if idx > 1:
                     f.write(',\n')
                 json.dump(event.dict(), f, indent=4)
 
