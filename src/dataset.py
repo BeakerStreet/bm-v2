@@ -88,43 +88,29 @@ class Dataset:
 
         raw_text = []
         
-        # Open the file once and write the opening bracket
-        with open('data/raw_text.json', 'w') as f:
-            f.write('[\n')
+        for idx, image in enumerate(self.images_list[:10], start=1):
+            game_id = image['name'][:8]
+            logging.info(f"Processing image {idx} of {len(self.images_list)}, filename: {game_id}")
+            completion = self.client.beta.chat.completions.parse(
+                model="gpt-4o-2024-08-06",
+                messages=[
+                    {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
+                    {
+                        "role": "user",
+                        "content": [
+                            {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
+                            {
+                                "type": "image_url",
+                                "image_url": {
+                                    "url": image['url'],
+                                }
+                            },
+                        ],
+                    },
+                ],
+                response_format=CivViBuildAnalysis,
+            )
 
-            for idx, image in enumerate(self.images_list[:10], start=1):
-                logging.info(f"Processing image {idx} of {len(self.images_list)}")
-                game_id = image['name'].split('/')[-1]
-                completion = self.client.beta.chat.completions.parse(
-                    model="gpt-4o-2024-08-06",
-                    messages=[
-                        {"role": "system", "content": os.environ['OPEN_AI_SYSTEM_PROMPT']},
-                        {
-                            "role": "user",
-                            "content": [
-                                {"type": "text", "text": "Return the data in the format of the CivViBuildAnalysis class."},
-                                {
-                                    "type": "image_url",
-                                    "image_url": {
-                                        "url": image['url'],
-                                    }
-                                },
-                            ],
-                        },
-                    ],
-                    response_format=CivViBuildAnalysis,
-                )
-
-                event = completion.choices[0].message.parsed
-
-                # Write each JSON object, adding a comma before each except the first
-                if idx > 1:
-                    f.write(',\n')
-                json.dump(event.dict(), f, indent=4)
-
-                raw_text.append(event)
-
-            # Write the closing bracket
-            f.write('\n]')
+            event = completion.choices[0].message.parsed
 
         return raw_text

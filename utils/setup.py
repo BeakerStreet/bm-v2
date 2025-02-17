@@ -10,6 +10,21 @@ load_dotenv(find_dotenv())
 SERVICE_ACCOUNT_FILE = os.getenv('SERVICE_ACCOUNT_FILE')
 SCOPES = os.getenv('SCOPES').strip("[]").replace("'", "").split(", ")
 
+'''
+    Plan:
+
+    - create the labeling sequence in dataset:
+        > create dataset.json and a labeling function for collecting build orders from screenshots (only)
+        > build orders -> dataset.json
+        > (opt) plot build orders 
+    - create the mod prediction sequence in bmv2:
+        > build orders -> PseudoYields
+        > PseudoYields -> mod code
+    - ai-generate some model tutorials: 
+        > a multi-modal input that predicts the build order data in one shot
+        > a transformer taking the images, generating a bunch of text, and outputting the mod code directly
+    '''
+
 def authenticate_gdrive():
     
     # Build the Drive API client
@@ -83,22 +98,6 @@ def main():
 
     # rn()
     # s3_ul()
-
-    '''
-    Plan:
-
-    - create the labeling sequence in dataset:
-        > create dataset.json and a labeling function for collecting build orders from screenshots (only)
-        > build orders -> dataset.json
-        > (opt) plot build orders 
-    - create the mod prediction sequence in bmv2:
-        > build orders -> PseudoYields
-        > PseudoYields -> mod code
-    - ai-generate some model tutorials: 
-        > a multi-modal input that predicts the build order data in one shot
-        > a transformer taking the images, generating a bunch of text, and outputting the mod code directly
-    '''
-
 
 if __name__ == "__main__":
     main()
