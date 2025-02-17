@@ -46,6 +46,33 @@ class Dataset:
 
         return images_list
 
+    def process_cities(self, event):
+        """
+        Process the cities from the event and return a list of city dictionaries.
+        """
+        return [{"name": city.name, "current_build": city.current_build} for city in event.cities]
+
+    def update_raw_text(self, raw_text, game_id, turn, cities):
+        """
+        Update the raw_text DataFrame with the new turn data.
+        """
+        turn_data = {
+            "turn": turn,
+            "cities": cities
+        }
+
+        if game_id in raw_text['game_id'].values:
+            raw_text.loc[raw_text['game_id'] == game_id, 'turns'].values[0].append(turn_data)
+        else:
+            new_row = {
+                "game_id": game_id,
+                "build_order": [],
+                "turns": [turn_data]
+            }
+            raw_text = pd.concat([raw_text, pd.DataFrame([new_row])], ignore_index=True)
+
+        return raw_text
+
     def generate(self):
         '''
         Generates a text dataset 
@@ -56,34 +83,30 @@ class Dataset:
         turn for CivViBuildAnalysis
         '''
 
-        raw_text = pd.DataFrame()
+        # initialize the data frame
+        raw_text = pd.DataFrame({
+            "game_id": [],
+            "build_order": [],
+            "turns": []
+        })
         
-        for idx, image in enumerate(self.images_list[:10], start=1):
-            '''
-            Here we create the data structure
-            for the dataset.json file, before
-            cleaning it and adding locally. 
-            Dataset should result in the following:
+        # parse the images in images_list for turn and cities data
+        for idx, image in enumerate(self.images_list[:5], start=1):
+            logging.info(f"Processing image {idx} of {len(self.images_list)}, filename: {image['name']}")
+            game_id = image['name'][:25]
 
-            build_orders = {
-                "game_id": "game_001", # example
-                "build_order": [], # ordered list of all build decisions, compiled post-iteration
-                "turns": [
-                    {
-                        "turn": 1, # example
-                        "cities": [
-                            {
-                                "name": "city_1", # example
-                                "current_build": "Settler" # example
-                            }
-                        ]
-                    }   
-                ]
-            }
-            '''
+            event = self.getTurnAnalysis(image)
+            cities = self.process_cities(event)
+            
+            # Update raw_text with the new data
+            raw_text = self.update_raw_text(raw_text, game_id, event.turn, cities)
 
-            game_id = image['name'][:24]
-            logging.info(f"Processing image {idx} of {len(self.images_list)}, filename: {game_id}")
+        raw_text.to_json('data/dataset.json', orient='records', lines=True)
+
+        return raw_text
+    
+    def getTurnAnalysis(self, image):
+        # get the CGPT analysis
             completion = self.client.beta.chat.completions.parse(
                 model="gpt-4o-2024-08-06",
                 messages=[
@@ -104,29 +127,7 @@ class Dataset:
                 response_format=TurnAnalysis,
             )
 
+            # parse the completion
             event = completion.choices[0].message.parsed
-            print(event)
-            input('')
 
-            build_order = {
-                "game_id": f"{game_id}",
-                "build_order": [],  
-                "turns": [
-                    {
-                        "turn": event.turns[0].turn,
-                        "cities": [
-                            {
-                                "name": event.turns[0].cities[0].name, 
-                                "current_build": event.turns[0].cities[0].current_build
-                            }
-                        ]
-                    }
-                ]
-            }
-            
-            raw_text = raw_text.append(build_order, ignore_index=True)
-
-        # add iteration into build_order compile (what if there's multiple cities?)
-        # post-iteration sort turns and get build_order
-
-        return raw_text
+            return event

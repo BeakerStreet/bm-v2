@@ -14,8 +14,7 @@ SCOPES = os.getenv('SCOPES').strip("[]").replace("'", "").split(", ")
     Plan:
 
     - create the labeling sequence in dataset:
-        > create dataset.json and a labeling function for collecting build orders from screenshots (only)
-        > build orders -> dataset.json
+        > add build_order feature into dataset.json creation (in dataset.generate)
         > (opt) plot build orders 
     - create the mod prediction sequence in bmv2:
         > build orders -> PseudoYields
